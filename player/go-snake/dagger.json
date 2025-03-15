@@ -1,0 +1,7 @@
+{
+  "name": "go-snake",
+  "engineVersion": "v0.17.0-llm.8",
+  "sdk": {
+    "source": "go"
+  }
+}

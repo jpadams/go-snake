@@ -1,0 +1,96 @@
+package main
+
+import (
+	"context"
+	"dagger/player/internal/dagger"
+)
+
+func New(
+	snakeGameServer *dagger.Service,
+) *Player {
+	return &Player{
+		Server: snakeGameServer,
+	}
+}
+
+type Player struct {
+	Server *dagger.Service
+}
+
+// Play snake game
+func (m *Player) Play(ctx context.Context) {
+	game := dag.GoSnake(m.Server)
+
+	dag.Llm().
+		WithGoSnake(game).
+		WithPrompt(`You're are playing a snake game on a 10x10 board!
+Start by calling startGame!!
+
+Keep playing until Game Over == true.
+
+Use OpenAI style tool calling THE WHOLE TIME!! Every time!
+Do not try alternative tool-calling formats. Always use OpenAI’s tool calling format exactly as specified.
+When calling a tool, always use the following format:
+
+{
+  "tool_name": "example_tool",
+  "parameters": {
+    "param1": "value1",
+    "param2": "value2"
+  }
+}
+
+Never deviate from this structure.
+
+
+Run getGameState as much as you can to see the current state.
+Quickly decide on whether to move or just getGameState again
+if it's not time to move. Do this in a loop as fast as you can!
+
+This is not a turn-based game! Your snake keeps moving in the last direction it was going and WILL hit a wall and DIE if you don't getGameState frequently and use makeMove to alter course away from walls and toward food.
+
+Don't write programs to solve this.
+Don't tell my about your reasoning.
+Just look at the output you receive and make a decision.
+Don't stop and ask for input, make your own decisions.
+Move the snake to get the food!!!!
+
+Don't tell me what you're going to do! DO IT by calling tools!
+
+Your goal is to stay alive as long as possible and eat as much food as possible.
+
+Dont' give up!!! Keep going!!!
+
+YOU CAN'T PASS THROUGH WALLS, so stay inside the box.
+If you hit a wall, you DIE! If you hit your own tail, you DIE!
+`).LastReply(ctx)
+}
+
+// 		WithPrompt(`You have access to a goSnake module
+// with a set of functions/tools.
+// ALWAYS START BY RUNNING the startGame tool!
+// Then use the other two tools to look & move.`).
+// 		WithPrompt(`You have a function called getGameState that will
+// let you "look" at the 20x20 board and give you status of the game.
+// Use getGameState and then makeMove in a loop to keep eating food and staying alive.
+// This is not a turn-based game! Your snake keeps moving in the last direction it was
+// going and WILL hit a wall and DIE if you don't getGameState frequently and
+// use makeMove to alter course away from walls and toward food.`).
+// 		WithPrompt(`Time is of the ESSENCE! Be very terse while playing.
+// You'll be done when you've eaten 20 pieces of food.
+// Your mission is to SURVIVE and EAT!
+// You eat food by putting your snake's head on the same square as the food.
+// YOU CAN'T PASS THROUGH WALLS, so stay inside the box.
+// IF YOU TOUCH THE WALLS, it's GAME OVER! You're DEAD!
+
+// Your goal is to stay alive as long as possible and eat as much food as possible.
+// You want to avoid the walls and avoid your own tail.
+
+// If the game is over you can startGame to start a new one.
+// This is not a turn-based game! Your snake keeps moving in the last direction it was
+// going and WILL hit a wall and DIE if you don't getGameState frequently and
+// use makeMove to alter course away from walls and toward food.
+
+// Don't stop and ask for input, make your own decisions.
+// Move the snake to get the food!!!!
+// Call getGameState tool every .5 seconds
